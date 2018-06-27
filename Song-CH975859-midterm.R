@@ -11,7 +11,7 @@ library(directlabels)
 library(ggrepel)
 library(shiny)
 
-genmemData <- read_sav("~/OneDrive - University of Central Florida - UCF/ICPSR_33001 gen mem/gen-mem-file1-Merged1985-2010_Data_112211.sav")
+genmemData <- read_sav("./gen-mem-file1-Merged1985-2010_Data_112211.sav")
 genmemData <- as_factor(genmemData)
 
 grpwwii <- with(genmemData, table(survey, cohort17, wwii))
@@ -74,7 +74,6 @@ ggplot() +
   stat_smooth(data=weightedGroups, aes(x=weightedGroups$cohort17, y=weightedGroups$allpercviet, group=1, weight=weightedGroups$totalviet, linetype="Weighted Average"), color="black", span=0.55, se=FALSE, size=2) +
   geom_vline(weightedGroups, xintercept=which.max(weightedGroups$allpercviet) + 1, linetype="dashed") +
   scale_y_continuous(labels=percent) +
-  geom_dl(data=groupedGens, aes(x=cohort17, y=percviet, label=survey), method="last.points", stat="smooth", span=0.55) +
   labs(x="Birth Cohort", y="Percentage of Cohort that Mentioned Event", color="Survey", shape="Survey", linetype="", title="Percentage of Cohorts that Mentioned Vietnam War (with regression lines)") +
   annotate("text", x=8.9, y=0.01, hjust=1, label="1946-50 Cohort Apprx Age at:") +
   annotate("text", x=8.8, y=0, hjust=1, label="Start of war, 1965 = 17") +
@@ -90,9 +89,19 @@ ggplot() +
 
 ggplot(weightedGroups, aes(x=weightedGroups$cohort17, y=weightedGroups$allpercviet)) +
   geom_point(shape=19, size=4) +
-  # geom_smooth(aes(group=1), se=FALSE, color="black", size=2) +
   stat_smooth(aes(group=1,  weight=weightedGroups$totalviet), se=FALSE, color="black", size=1.5) +
   scale_y_continuous(labels=percent) +
+  geom_vline(weightedGroups, xintercept=which.max(weightedGroups$allpercviet), linetype="dashed") +
+  annotate("text", x=7.9, y=0.02, hjust=1, label="1946-50 Cohort Apprx Age at:") +
+  annotate("text", x=7.8, y=0.01, hjust=1, label="Start of war, 1965 = 17") +
+  annotate("text", x=7.8, y=0.005, hjust=1, label="Crisis in 1968 = 20") +
+  annotate("text", x=7.8, y=0, hjust=1, label="End of war, 1973 = 25") +
+  annotate("segment", 
+           x=6.25,
+           xend=7.9, 
+           y=.015, 
+           yend=.015, 
+           color="black", size=0.5) +
   labs(x="Birth Cohort", y="Percentage of Respondents who Mentioned Event", color="Survey", shape="Survey", title="Percentage of Cohorts that Mentioned Vietnam War (weighted average of all surveys with regression line)") +
   theme(text=element_text(family="Times", size=18), axis.text.x=element_text(angle=45, hjust=1))
 
@@ -116,6 +125,16 @@ server <- function(input, output) {
       geom_vline(weightedGroups, xintercept=which.max(weightedGroups$allpercviet) + 1, linetype="dashed") +
       scale_y_continuous(labels=percent) +
       labs(x="Birth Cohort", y="Percentage of Respondents who Mentioned Event", color="Survey", shape="Survey", linetype="") +
+      annotate("text", x=8.9, y=0.025, hjust=1, label="1946-50 Cohort Apprx Age at:") +
+      annotate("text", x=8.8, y=0.01, hjust=1, label="Start of war, 1965 = 17") +
+      annotate("text", x=8.8, y=0, hjust=1, label="Crisis in 1968 = 20") +
+      annotate("text", x=8.8, y=-0.01, hjust=1, label="End of war, 1973 = 25") +
+      annotate("segment", 
+               x=6.25,
+               xend=8.9, 
+               y=.02, 
+               yend=.02, 
+               color="black", size=0.5) +
       theme(text=element_text(family="Times", size=18), axis.text.x=element_text(angle=45, hjust=1))
   })
 }
@@ -130,7 +149,7 @@ ggplot(groupedPost911, aes(x=groupedPost911$cohort17, y=groupedPost911$perc911, 
   geom_smooth(se=FALSE, size=0.5, linetype="dashed") +
   scale_y_continuous(labels=percent) +
   labs(x="Birth Cohort", y="Percentage of Cohort that Mentioned Event", color="Survey", shape="Survey", title="Percentage of Cohorts that Mentioned 9/11") +
-  theme(text=element_text(family="Times", size=18))
+  theme(text=element_text(family="Times", size=18), axis.text.x=element_text(angle=45, hjust=1))
 
 ggplot(groupedPost911, aes(x=groupedPost911$survey, y=groupedPost911$perc911, group=groupedPost911$cohort17, color=groupedPost911$cohort17)) +
   geom_bar(aes(fill=groupedPost911$cohort17), stat="identity", position="dodge", width=0.7) +
