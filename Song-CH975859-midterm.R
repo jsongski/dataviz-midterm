@@ -79,9 +79,6 @@ ggplot() +
            size=5,
            label=c(paste(as.character(warAgeRange$Youngest), as.character(warAgeRange$Oldest), sep="-", collapse=NULL))
            ) +
-  # geom_vline(xintercept=2.72, linetype="dashed", color="black", alpha=0.5) +
-  # geom_vline(xintercept=4, linetype="dashed", color="black", alpha=0.5) +
-  # geom_vline(xintercept=5.28, linetype="dashed", color="black", alpha=0.5) +
   geom_dl(data=groupedGens, aes(x=groupedGens$cohort17, y=groupedGens$percwwii, group=groupedGens$survey, color=groupedGens$survey, label=survey), method=list("last.points", cex=0.8, vjust=0.5, hjust=-0.09)) +
   geom_dl(data=weightedGroups, aes(x=weightedGroups$cohort17, y=weightedGroups$allpercwwii, label="Weighted Average"), method=list("first.points", cex=1.25, vjust=1.5, hjust=1)) +
   scale_x_discrete(expand=c(0.07, 0)) +
@@ -89,10 +86,49 @@ ggplot() +
   labs(x="Birth Cohort", y="Percentage of Cohort that Mentioned Event", color="Survey", linetype="", title="Percentage of Cohorts that Mentioned World War II (with regression lines)") +
   theme(text=element_text(family="Times", size=18), axis.text.x=element_text(angle=45, hjust=1), legend.position="")
 
+
+# Figure 3 Mod: 9/11
+# Purpose/argument: Address one confound (recency effect) by showing evidence of critical period regardless of time.
+# Limitations: Recycled same plot format; lazy. Superfluous x-ticks. Still used weighted average even though the whole point is to show DIFFERENCES across survey, so aggregating them is unnecessary.
+oldest911 <- c(seq(1926, 1986, 5))
+youngest911 <- c(seq(1930, 1985, 5), 1991)
+
+oldest911 <- 2001 - oldest911
+youngest911 <- 2001 - youngest911
+sept11AgeRange <- data.frame(Youngest=youngest911, Oldest=oldest911)
+
+ageLabels <- c(paste(as.character(sept11AgeRange$Youngest), as.character(sept11AgeRange$Oldest), sep="-", collapse=NULL))
+
+ggplot(groupedPost911, aes(x=groupedPost911$cohort17, y=groupedPost911$perc911, group=groupedPost911$survey, color=groupedPost911$survey)) +
+  geom_point(shape=19, size=3) +
+  stat_smooth(se=FALSE, span=0.7, size=0.5, linetype="dashed") +
+  geom_dl(aes(label=survey), method=list("last.points", cex=0.9, vjust=0.3, hjust=-0.1)) +
+  scale_x_discrete(expand=c(0.11, 0), labels=ageLabels) +
+  scale_y_continuous(labels=percent) +
+  labs(x="Age during Event", y="Percentage of Cohort that Mentioned Event", color="Survey", shape="Survey", title="Percentage of Cohorts that Mentioned 9/11") +
+  theme(text=element_text(family="Times", size=18), axis.text.x=element_text(angle=45, hjust=1), legend.position="none")
+
+ggplot(groupedPost911, aes(x=groupedPost911$survey, y=groupedPost911$perc911, group=groupedPost911$cohort17, color=groupedPost911$cohort17)) +
+  geom_bar(aes(fill=groupedPost911$cohort17), stat="identity", position="dodge", width=0.7) +
+  scale_x_discrete(limits=c("NCS 2001-02/POST", "SRC 2001-02/POST", "SRC 2009-10"), labels=c("Sept - Nov 2001", "Nov 2001 - Jan 2002", "Aug 2009 - Mar 2010")) +
+  scale_y_continuous(labels=percent) +
+  scale_fill_discrete(name="Age during Event", labels=ageLabels) +
+  scale_color_discrete(name="Age during Event", labels=ageLabels) +
+  labs(x="Time Period Surveyed", y="Percentage of Cohort that Mentioned Event", color="Birth Cohort", shape="Birth Cohort", title="Percentage of Cohorts that Mentioned 9/11 (2001) at Different Points in Time") +
+  guides(fill=guide_legend(nrow = 1, 
+                           direction = "horizontal",
+                           title.position = "top",
+                           label.position = "bottom",
+                           label.hjust = 0.5,
+                           label.vjust = -1)) +
+  theme(text=element_text(family="Times", size=18), legend.position="bottom", legend.key.width=unit(2.5, "cm"), legend.box.spacing=unit(1, "cm"))
+
+
 # Figure 5 Mod: Vietnam.
 # Purpose/argument: Strongest evidence of critical period.
 # Limitations: Explains age at event in text, but when viewing the graph, this is not made explicit, despite this information being critical to the argument!
 # Fix: Add annotation/v-line. Point out ages at critical events (start of war, 1968 crisis, end of war) for modal cohort (46-50).
+# Fig 5 Mod 1:
 ggplot() +
   geom_point(data=groupedGens, aes(x=groupedGens$cohort17, y=groupedGens$percviet, group=groupedGens$survey, color=groupedGens$survey), shape=19, size=1) +
   stat_smooth(data=groupedGens, aes(x=groupedGens$cohort17, y=groupedGens$percviet, group=groupedGens$survey, color=groupedGens$survey, weight=groupedGens$totalviet), span=0.55, se=FALSE, size=0.5, linetype="dashed") +
@@ -113,6 +149,7 @@ ggplot() +
            color="black", size=0.5) +
   theme(text=element_text(family="Times", size=18), axis.text.x=element_text(angle=45, hjust=1), legend.justification=c(1, 1), legend.position=c(1, 1))
 
+# Fig 5 Mod 2: Weighted Average only
 ggplot(weightedGroups, aes(x=weightedGroups$cohort17, y=weightedGroups$allpercviet)) +
   geom_point(shape=19, size=4) +
   stat_smooth(aes(group=1,  weight=weightedGroups$totalviet), se=FALSE, color="black", size=1.5) +
@@ -132,7 +169,7 @@ ggplot(weightedGroups, aes(x=weightedGroups$cohort17, y=weightedGroups$allpercvi
   theme(text=element_text(family="Times", size=18), axis.text.x=element_text(angle=45, hjust=1))
 
 
-# Fig 5 Interactive
+# Fig 5 Mod 3: Interactive
 ui <- fluidPage(titlePanel("Percentage of Cohorts that Mentioned Vietnam War (with regression line)"), 
                 selectInput(inputId="survey", label="Select individual survey from the menu below:", choices=unique(groupedGens$survey)),
                 plotOutput("plot", width="100%", height="500px"))
@@ -166,42 +203,3 @@ server <- function(input, output) {
 }
 
 shinyApp(ui, server)
-
-# Figure 3 Mod: 9/11
-# Purpose/argument: Address one confound (recency effect) by showing evidence of critical period regardless of time.
-# Limitations: Recycled same plot format; lazy. Superfluous x-ticks. Still used weighted average even though the whole point is to show DIFFERENCES across survey, so aggregating them is unnecessary.
-oldest911 <- c(seq(1926, 1986, 5))
-youngest911 <- c(seq(1930, 1985, 5), 1991)
-
-oldest911 <- 2001 - oldest911
-youngest911 <- 2001 - youngest911
-sept11AgeRange <- data.frame(Youngest=youngest911, Oldest=oldest911)
-
-ageLabels <- c(paste(as.character(sept11AgeRange$Youngest), as.character(sept11AgeRange$Oldest), sep="-", collapse=NULL))
-
-ggplot(groupedPost911, aes(x=groupedPost911$cohort17, y=groupedPost911$perc911, group=groupedPost911$survey, color=groupedPost911$survey)) +
-  geom_point(shape=19, size=3) +
-  stat_smooth(se=FALSE, span=0.7, size=0.5, linetype="dashed") +
-  geom_dl(aes(label=survey), method=list("last.points", cex=0.9, vjust=0.3, hjust=-0.1)) +
-  scale_x_discrete(expand=c(0.11, 0), labels=ageLabels) +
-  scale_y_continuous(labels=percent) +
-  labs(x="Age during Event", y="Percentage of Cohort that Mentioned Event", color="Survey", shape="Survey", title="Percentage of Cohorts that Mentioned 9/11") +
-  theme(text=element_text(family="Times", size=18), axis.text.x=element_text(angle=45, hjust=1), legend.position="none")
-
-ggplot(groupedPost911, aes(x=groupedPost911$survey, y=groupedPost911$perc911, group=groupedPost911$cohort17, color=groupedPost911$cohort17)) +
-  geom_bar(aes(fill=groupedPost911$cohort17), stat="identity", position="dodge", width=0.7) +
-  scale_x_discrete(limits=c("NCS 2001-02/POST", "SRC 2001-02/POST", "SRC 2009-10"), labels=c("Sept - Nov 2001", "Nov 2001 - Jan 2002", "Aug 2009 - Mar 2010")) +
-  scale_y_continuous(labels=percent) +
-  scale_fill_discrete(name="Age during Event", labels=ageLabels) +
-  scale_color_discrete(name="Age during Event", labels=ageLabels) +
-  labs(x="Time Period Surveyed", y="Percentage of Cohort that Mentioned Event", color="Birth Cohort", shape="Birth Cohort", title="Percentage of Cohorts that Mentioned 9/11 (2001) at Different Points in Time") +
-  guides(fill=guide_legend(nrow = 1, 
-         direction = "horizontal",
-         title.position = "top",
-         label.position = "bottom",
-         label.hjust = 0.5,
-         label.vjust = -1)) +
-  theme(text=element_text(family="Times", size=18), legend.position="bottom", legend.key.width=unit(2.5, "cm"), legend.box.spacing=unit(1, "cm"))
-        # , legend.direction="vertical", legend.text.align=1, legend.key.heigh=unit(0.5, "cm"), legend.key.width=unit(0.75, "cm"), legend.justification=c(1, 1), legend.position=c(1, 1))
-
-
